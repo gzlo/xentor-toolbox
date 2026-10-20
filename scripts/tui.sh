@@ -67,7 +67,7 @@ tui_confirm() {
   [[ "${YES:-0}" == "1" ]] && return 0
 
   if tui_has_gum; then
-    gum confirm "Install $count item(s): ${SELECTION[*]}?"
+    gum confirm --default=false "Install $count item(s): ${SELECTION[*]}?"
     return $?
   fi
 
@@ -97,7 +97,7 @@ tui_gum_pick_items() {
 
     if [[ -z "${picked//[[:space:]]/}" ]]; then
       log_warn "nothing picked — use space to toggle at least one item, or esc to go back"
-      gum confirm "Pick again?" || return 1
+      gum confirm --default=true "Pick again?" || return 1
       continue
     fi
 

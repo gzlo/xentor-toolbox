@@ -9,24 +9,42 @@ engine_summary_line() {
 }
 
 # engine_install_pkg <id> — install through the platform package manager.
+# engine_install_pkg <id> — install through the platform package manager.
+# PLATFORM (fedora|debian|arch) selects the package name; PKG_MGR (dnf|apt|pacman)
+# selects the command. They are different keys and must never be compared to each
+# other: doing that silently broke every pkg item.
 engine_install_pkg() {
   local id="$1" pkg=""
-  case "$PKG_MGR" in
+  case "$PLATFORM" in
     fedora) pkg="${ITEM_PKG_FEDORA[$id]:-}" ;;
     debian) pkg="${ITEM_PKG_DEBIAN[$id]:-}" ;;
     arch)   pkg="${ITEM_PKG_ARCH[$id]:-}" ;;
     *)
-      log_error "item '$id': no supported package manager on '$PLATFORM'"
+      log_error "item '$id': no package mapping for platform '$PLATFORM'"
       return 1
       ;;
   esac
-  [[ -n "$pkg" ]] || { log_error "item '$id': no package name for '$PKG_MGR'"; return 1; }
+  [[ -n "$pkg" ]] || { log_error "item '$id': no package name for '$PLATFORM'"; return 1; }
   # $pkg may hold several space-separated names ("rust cargo"); splitting is intended.
   # shellcheck disable=SC2086
   case "$PKG_MGR" in
-    fedora) sudo_run dnf install -y $pkg ;;
-    debian) sudo_run env DEBIAN_FRONTEND=noninteractive apt-get install -y $pkg ;;
-    arch)   sudo_run pacman -S --noconfirm --needed $pkg ;;
+    dnf) sudo_run dnf install -y $pkg ;;
+    apt) sudo_run env DEBIAN_FRONTEND=noninteractive apt-get install -y $pkg ;;
+    pacman) sudo_run pacman -S --noconfirm --needed $pkg ;;
+    *)
+      log_error "item '$id': no usable package manager on '$PLATFORM' (expected dnf, apt or pacman)"
+      return 1
+      ;;
+  esac
+}
+
+# engine_rollback_hint — name the undo command of the manager actually in use.
+engine_rollback_hint() {
+  case "$PKG_MGR" in
+    dnf) printf "'dnf history undo'" ;;
+    apt) printf "'apt-get remove <package>'" ;;
+    pacman) printf "'pacman -R <package>'" ;;
+    *) printf "your package manager" ;;
   esac
 }
 
@@ -124,7 +142,7 @@ engine_run() {
   for id in "${ids[@]}"; do
     if ! engine_item "$id"; then
       log_error "item '$id' failed — halting run."
-      log_error "Rollback: see ${INSTALL_LOG:-the run log}; 'dnf history undo' for packages."
+      log_error "Rollback: see ${INSTALL_LOG:-the run log}; undo package changes with $(engine_rollback_hint)."
       return 1
     fi
   done

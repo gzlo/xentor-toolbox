@@ -145,6 +145,10 @@ catalog_detect_platform() {
     *) PKG_MGR="" ;;
   esac
 
+  if [[ -n "$PKG_MGR" ]] && ! command -v "$PKG_MGR" >/dev/null 2>&1; then
+    log_warn "platform '$PLATFORM' expects '$PKG_MGR', which is not installed here: package items will fail"
+  fi
+
   if [[ -n "${XT_HEADLESS:-}" ]]; then
     HEADLESS="$XT_HEADLESS"
   elif [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
