@@ -6,6 +6,9 @@ Run: python3 -m unittest discover -s tests -v
 gum is replaced by a deterministic shim that answers one canned menu line per
 call, and the gum-less path is exercised with a PATH that contains only the
 binaries install.sh actually needs. Nothing is installed: every run is --dry-run.
+
+The wizard must always show what can be installed, and an empty selection must
+return to the menu instead of ending the run.
 """
 
 import os
@@ -29,6 +32,7 @@ n=0
 cmd="${1:-}"
 case "$cmd" in
   confirm) exit "${FAKE_GUM_CONFIRM:-0}" ;;
+  pager) cat ;;
   choose)
     n=$((n + 1))
     printf '%s' "$n" > "$counter"
@@ -39,13 +43,9 @@ esac
 """
 
 # Minimal binary set the installer needs, so the gum-less path can run without /usr/bin.
-GUM_FREE_BINARIES = ["bash", "dirname", "sed", "head", "tr", "id", "getent", "cut"]
+GUM_FREE_BINARIES = ["bash", "dirname", "sed", "head", "tr", "id", "getent", "cut", "wc"]
 
 MINIMAL = ["git", "curl", "wget", "unzip", "tar", "gzip", "btop", "ripgrep", "fd", "jq", "fresh"]
-
-ANSWERS_PROFILE = ["profile", "minimal"]
-ANSWERS_CATEGORY = ["by-category", "editor", "fresh"]
-ANSWERS_QUIT = ["quit"]
 
 
 def planned(result):
@@ -103,33 +103,64 @@ def run_tui(answers, *, gum=True, confirm=0, stdin_text="", os_name="fedora"):
 
 
 class GumWizardTest(unittest.TestCase):
-    def test_profile_flow_plans_the_profile_items(self):
-        result = run_tui(ANSWERS_PROFILE)
-        self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(planned(result), MINIMAL)
-
-    def test_category_flow_plans_only_the_picked_items(self):
-        result = run_tui(ANSWERS_CATEGORY)
+    def test_items_flow_lists_every_item_and_plans_the_picked_one(self):
+        result = run_tui(["items", "fresh  Fresh [editor] Terminal code editor"])
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(planned(result), ["fresh"])
 
+    def test_profile_flow_plans_the_profile_items(self):
+        result = run_tui(["profile", "minimal"])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(planned(result), MINIMAL)
+
+    def test_catalog_action_shows_descriptions(self):
+        result = run_tui(["catalog", "quit"])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("WHAT IT IS", result.stdout)
+        self.assertIn("Version control", result.stdout)
+        self.assertIn("items available here", result.stdout)
+
+    def test_empty_selection_returns_to_the_menu_instead_of_exiting(self):
+        # items -> enter with nothing toggled -> decline "Pick again?" -> quit
+        result = run_tui(["items", "", "quit"], confirm=1)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("nothing picked", result.stdout)
+        self.assertEqual(planned(result), [])
+
     def test_quit_installs_nothing(self):
-        result = run_tui(ANSWERS_QUIT)
+        result = run_tui(["quit"])
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(planned(result), [])
 
     def test_declined_confirmation_installs_nothing(self):
-        result = run_tui(ANSWERS_PROFILE, confirm=1)
+        result = run_tui(["items", "fresh"], confirm=1)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(planned(result), [])
         self.assertIn("cancelled", result.stdout)
 
 
 class FallbackWizardTest(unittest.TestCase):
-    def test_without_gum_the_numbered_menu_still_works(self):
+    def test_without_gum_items_are_listed_and_pickable_by_number(self):
+        result = run_tui([], gum=False, stdin_text="i\n1\ny\n")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(planned(result), ["git"])
+        self.assertIn("Available on fedora", result.stderr)
+
+    def test_without_gum_a_range_picks_several_items(self):
+        result = run_tui([], gum=False, stdin_text="i\n1-3\ny\n")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(planned(result), ["git", "curl", "wget"])
+
+    def test_without_gum_a_profile_still_works(self):
         result = run_tui([], gum=False, stdin_text="1\ny\n")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(planned(result), MINIMAL)
+
+    def test_without_gum_the_catalog_is_visible(self):
+        result = run_tui([], gum=False, stdin_text="c\n\n")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("WHAT IT IS", result.stdout)
+        self.assertEqual(planned(result), [])
 
     def test_without_gum_a_declined_confirmation_installs_nothing(self):
         result = run_tui([], gum=False, stdin_text="1\nn\n")

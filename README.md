@@ -7,7 +7,7 @@ each with its own "is this already here?" check, driven by a terminal wizard. No
 dotfiles, no secrets, no telemetry — it installs tools and gets out of the way.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/gzlo/xentor-toolbox/v0.1.1/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/gzlo/xentor-toolbox/v0.1.2/bootstrap.sh | bash
 ```
 
 The URL points at a **tag**, not at `main`: the entry point is immutable. Any fix
