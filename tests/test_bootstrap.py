@@ -116,7 +116,8 @@ class BootstrapTest(unittest.TestCase):
         self.assertIn("using cached copy", second.stdout)
 
     def test_tampered_tarball_is_refused_before_anything_runs(self):
-        tarball = self.src / "dist" / "xentor-toolbox-0.1.0.tar.gz"
+        version = (self.src / "VERSION").read_text().strip()
+        tarball = self.src / "dist" / f"xentor-toolbox-{version}.tar.gz"
         with tarball.open("ab") as handle:
             handle.write(b"tampered")
         result = run_bootstrap(self.src, "--dry-run", "--force", "--profile", "minimal", cache_home=self.cache)

@@ -64,9 +64,13 @@ and every run under `--dry-run` so nothing is installed.
 
 ## Delivery
 
-Single initial commit plus one release commit that pins the tarball hash, then tag
-`v0.1.0`. The bootstrap is verified end to end through the real public URL before
-the release is announced.
+Single initial commit plus one release commit per tag. The bootstrap is verified
+end to end through the real public URL (`--list` and `--dry-run`) before a release
+is announced.
+
+Rule discovered while verifying: the entry point must be immutable, so the
+documented one-liner points at a tag, not `main`. A fix to the bootstrap itself is
+a patch release (`v0.1.1` carries the terminal-probe fix for that reason).
 
 ## Log
 
