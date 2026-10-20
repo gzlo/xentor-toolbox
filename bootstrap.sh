@@ -22,9 +22,9 @@ info() { printf '[INFO]  %s\n' "$*"; }
 # `curl | bash` gives the script the pipe as stdin, so the wizard could never read a
 # keystroke. Reattach the controlling terminal when there is one.
 if [[ ! -t 0 ]]; then
-  if exec 3</dev/tty 2>/dev/null; then
-    exec 0<&3
-    exec 3<&-
+  # Probe in a subshell so a missing terminal cannot leak a redirection error.
+  if ( : </dev/tty ) 2>/dev/null; then
+    exec 0</dev/tty
   else
     case " $* " in
       *" --items "*|*" --profile "*|*" --list "*|*" --list-profiles "*|*" --dry-run "*|*" --help "*|*" -h "*) ;;

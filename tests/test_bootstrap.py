@@ -129,6 +129,12 @@ class BootstrapTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("--items", result.stdout)
 
+    def test_no_terminal_with_arguments_stays_silent_about_it(self):
+        result = run_bootstrap(self.src, "--list", cache_home=self.cache, detach=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn("/dev/tty", result.stderr)
+        self.assertIn("git", result.stdout)
+
     def test_no_terminal_and_no_arguments_fails_fast_with_a_hint(self):
         result = run_bootstrap(self.src, cache_home=self.cache, detach=True)
         self.assertEqual(result.returncode, 1)
