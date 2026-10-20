@@ -16,6 +16,7 @@ TARGET_DIR="${ACTUAL_HOME:-$HOME}/.config/xentor-toolbox"
 TARGET_FILE="$TARGET_DIR/shell.zsh"
 ZSHRC="${ACTUAL_HOME:-$HOME}/.zshrc"
 SHELL_LOCAL="${ACTUAL_HOME:-$HOME}/.shell.local"
+STARSHIP_CONFIG="${ACTUAL_HOME:-$HOME}/.config/starship.toml"
 
 START_MARKER="# >>> xentor-toolbox >>>"
 END_MARKER="# <<< xentor-toolbox <<<"
@@ -53,6 +54,16 @@ install_block() {
   log_ok "managed block installed in $ZSHRC"
 }
 
+install_starship_config() {
+  if [[ -e "$STARSHIP_CONFIG" ]]; then
+    log_ok "$STARSHIP_CONFIG already exists — your prompt is kept"
+    return 0
+  fi
+  mkdir -p "$(dirname "$STARSHIP_CONFIG")"
+  install -m 644 "$TB_DIR/shell/starship.toml" "$STARSHIP_CONFIG"
+  log_ok "default prompt written to $STARSHIP_CONFIG (blue, no Nerd Font needed)"
+}
+
 install_shell_local() {
   if [[ -e "$SHELL_LOCAL" ]]; then
     log_ok "$SHELL_LOCAL already exists — left untouched"
@@ -75,6 +86,7 @@ case "${1:-install}" in
   install)
     install_baseline_file
     install_block
+    install_starship_config
     install_shell_local
     ;;
   *)

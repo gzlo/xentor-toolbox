@@ -38,6 +38,36 @@ engine_install_pkg() {
   esac
 }
 
+# engine_manager_binary — the executable behind PKG_MGR (apt -> apt-get).
+engine_manager_binary() {
+  case "$PKG_MGR" in
+    dnf) printf 'dnf' ;;
+    apt) printf 'apt-get' ;;
+    pacman) printf 'pacman' ;;
+    *) printf '' ;;
+  esac
+}
+
+# engine_preflight <ids...> — refuse to start when a planned package item cannot work.
+# Failing here means nothing is half-installed: the run stops before the first item.
+engine_preflight() {
+  local id binary bad=()
+  binary="$(engine_manager_binary)"
+  for id in "$@"; do
+    [[ "${ITEM_METHOD[$id]}" == "pkg" ]] || continue
+    if [[ -z "$binary" ]] || ! command -v "$binary" >/dev/null 2>&1; then
+      bad+=("$id")
+    fi
+  done
+  ((${#bad[@]} == 0)) && return 0
+
+  log_error "refusing to start: ${#bad[@]} package item(s) need '${binary:-a package manager}', which is not installed here"
+  log_error "  platform detected as '$PLATFORM' — if this is an override, unset XT_OS or install the real manager"
+  log_error "  affected items: ${bad[*]}"
+  log_error "  nothing was installed. Use --dry-run to inspect the plan safely."
+  return 1
+}
+
 # engine_rollback_hint — name the undo command of the manager actually in use.
 engine_rollback_hint() {
   case "$PKG_MGR" in
@@ -120,6 +150,11 @@ engine_run() {
   log_info "$(engine_summary_line)"
 
   if [[ "${DRY_RUN:-0}" == "1" ]]; then
+    local binary
+    binary="$(engine_manager_binary)"
+    if [[ -n "$binary" ]] && ! command -v "$binary" >/dev/null 2>&1; then
+      log_warn "preview only: '$binary' is not installed here, so package items would fail on a real run"
+    fi
     for id in "${ids[@]}"; do
       if ! engine_gate_open "$id"; then
         printf '[dry-run] skip %s (opt-in: --%s)\n' "$id" "${ITEM_GATE[$id]}"
@@ -138,6 +173,8 @@ engine_run() {
     printf 'no changes made (dry-run)\n'
     return 0
   fi
+
+  engine_preflight "${ids[@]}" || return 1
 
   for id in "${ids[@]}"; do
     if ! engine_item "$id"; then

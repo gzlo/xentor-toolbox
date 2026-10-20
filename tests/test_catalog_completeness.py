@@ -57,12 +57,12 @@ class FullProfileCoverageTest(unittest.TestCase):
         self.assertEqual(sorted(listed_ids), sorted(planned_ids), "the full profile and the catalog disagree")
 
     def test_full_profile_follows_the_platform(self):
-        listed_ids = listed(run("--list", os_name="debian"))
+        listed_ids = listed(run("--list", os_name="alpine"))
         planned_ids = planned(
-            run("--dry-run", "--force", "--profile", "full", "--claude", "--gemini", os_name="debian")
+            run("--dry-run", "--force", "--profile", "full", "--claude", "--gemini", os_name="alpine")
         )
         self.assertEqual(sorted(listed_ids), sorted(planned_ids))
-        self.assertNotIn("starship", planned_ids)
+        self.assertNotIn("git", planned_ids, "a package item must not survive an unsupported platform")
 
 
 if __name__ == "__main__":

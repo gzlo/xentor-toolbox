@@ -86,11 +86,12 @@ item zsh-default label="Zsh as default" desc="chsh the login shell to zsh" categ
 
 item shell-baseline label="Shell baseline" desc="colours, safe aliases, history and completion; personal aliases live in ~/.shell.local" \
   category=shell platforms="fedora debian arch" method=custom deps="zsh" \
-  check='[[ -f "$ACTUAL_HOME/.config/xentor-toolbox/shell.zsh" ]] && grep -q "xentor-toolbox" "$ACTUAL_HOME/.zshrc" 2>/dev/null' \
+  check='[[ -f "$ACTUAL_HOME/.config/xentor-toolbox/shell.zsh" ]] && [[ -e "$ACTUAL_HOME/.config/starship.toml" ]] && grep -q "xentor-toolbox" "$ACTUAL_HOME/.zshrc" 2>/dev/null' \
   install='bash "$TB_DIR/scripts/shell-baseline.sh" install'
 
-item starship label="Starship" desc="Shell prompt" category=shell platforms="fedora arch" \
-  method=pkg pkg_fedora=starship pkg_arch=starship check="command -v starship"
+item starship label="Starship" desc="Shell prompt, blue by default (native package or official binary)" \
+  category=shell platforms="fedora debian arch" method=script \
+  check="command -v starship" install='bash "$TB_DIR/scripts/install-starship.sh"' 
 
 item fzf label="fzf" desc="Fuzzy finder" category=shell platforms="fedora debian arch" \
   method=pkg pkg_fedora=fzf pkg_debian=fzf pkg_arch=fzf check="command -v fzf"

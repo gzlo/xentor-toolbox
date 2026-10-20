@@ -45,5 +45,7 @@ compinit -i
 
 # --- prompt, only when starship is installed --------------------------------
 if (( $+commands[starship] )); then
+  # ~/.config/starship.toml holds the default blue prompt; your own file always wins
+  # because the installer never overwrites an existing one.
   eval "$(starship init zsh)"
 fi

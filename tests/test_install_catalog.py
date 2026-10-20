@@ -21,7 +21,7 @@ INSTALL = REPO / "install.sh"
 # A spread of catalog items across categories and platforms.
 SAMPLE_ITEMS = ["git", "btop", "fresh", "zsh", "starship", "nvim", "lazydocker", "opencode"]
 # `minimal` in catalog order.
-MINIMAL = ["git", "curl", "wget", "unzip", "tar", "gzip", "btop", "ripgrep", "fd", "jq", "zsh", "zsh-default", "shell-baseline", "fresh"]
+MINIMAL = ["git", "curl", "wget", "unzip", "tar", "gzip", "btop", "ripgrep", "fd", "jq", "zsh", "zsh-default", "shell-baseline", "starship", "fresh"]
 
 INSTALL_LINE = re.compile(r"^\[dry-run\] install (\S+)$")
 SKIP_LINE = re.compile(r"^\[dry-run\] skip (\S+) \(already installed\)$")
@@ -124,17 +124,17 @@ class SelectionTest(unittest.TestCase):
 
 
 class PlatformGateTest(unittest.TestCase):
-    def test_debian_hides_fedora_only_items_and_keeps_agnostic_ones(self):
-        result = run("--list", os_name="debian")
+    def test_an_unsupported_platform_hides_package_items_and_keeps_agnostic_ones(self):
+        result = run("--list", os_name="alpine")
         self.assertEqual(result.returncode, 0, result.stderr)
         ids = listed_ids(result)
-        self.assertNotIn("starship", ids)
-        self.assertIn("fresh", ids)
+        self.assertNotIn("git", ids, "a package item must not appear on an unsupported platform")
+        self.assertIn("fresh", ids, "platform-agnostic items must stay available")
 
     def test_selecting_an_unavailable_item_fails_with_its_name(self):
-        result = run("--dry-run", "--items", "starship", os_name="debian")
+        result = run("--dry-run", "--items", "git", os_name="alpine")
         self.assertEqual(result.returncode, 2)
-        self.assertIn("starship", result.stderr)
+        self.assertIn("git", result.stderr)
 
 
 class UsageTest(unittest.TestCase):
@@ -172,7 +172,7 @@ class WithBaselineTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(
             planned_installs(result),
-            ["zsh", "zsh-default", "shell-baseline", "fresh"],
+            ["zsh", "zsh-default", "shell-baseline", "starship", "fresh"],
         )
 
     def test_it_does_not_duplicate_items_a_profile_already_has(self):
@@ -185,7 +185,7 @@ class WithBaselineTest(unittest.TestCase):
     def test_it_works_on_its_own(self):
         result = run("--dry-run", "--force", "--with-baseline")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(planned_installs(result), ["zsh", "zsh-default", "shell-baseline"])
+        self.assertEqual(planned_installs(result), ["zsh", "zsh-default", "shell-baseline", "starship"])
 
     def test_an_unavailable_baseline_warns_and_does_not_block_the_rest(self):
         result = run("--dry-run", "--force", "--items", "fresh", "--with-baseline", os_name="alpine")

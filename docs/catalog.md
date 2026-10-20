@@ -97,10 +97,12 @@ XT_OS=debian XT_HEADLESS=1 ./install.sh --list
 
 ## The shell baseline
 
-`shell-baseline` (with `zsh` and `zsh-default`) is the only item that writes to your
-home directory. It installs `~/.config/xentor-toolbox/shell.zsh`, adds one managed
-block to `~/.zshrc` and creates `~/.shell.local` (0600) once. It is part of every
-profile, and `--with-baseline` adds it to an explicit `--items` selection.
+`shell-baseline` (with `zsh`, `zsh-default` and `starship`) is the only group that
+writes to your home directory. It installs `~/.config/xentor-toolbox/shell.zsh`, adds
+one managed block to `~/.zshrc`, writes the default blue prompt to
+`~/.config/starship.toml` only when that file is missing, and creates
+`~/.shell.local` (0600) once. It is part of every profile, and `--with-baseline`
+adds it to an explicit `--items` selection.
 
 ## Adding an item
 

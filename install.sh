@@ -36,7 +36,7 @@ DO_HELP=0
 WITH_BASELINE=0
 
 # The shell baseline: the three items --with-baseline guarantees.
-BASELINE_ITEMS=(zsh zsh-default shell-baseline)
+BASELINE_ITEMS=(zsh zsh-default starship shell-baseline)
 
 # Resolved, ordered, de-duplicated item ids.
 SELECTION=()

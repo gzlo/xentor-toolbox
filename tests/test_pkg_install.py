@@ -85,6 +85,28 @@ class PackageInstallTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(recorded, "install -y make")
 
+    def test_a_missing_manager_fails_before_installing_anything(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            build_installer(root)
+            env = dict(os.environ)
+            env.pop("DISPLAY", None)
+            env.pop("WAYLAND_DISPLAY", None)
+            env.update({"XT_OS": "debian", "XT_HEADLESS": "1"})
+            result = subprocess.run(
+                ["bash", str(root / "install.sh"), "--items", "make", "--force"],
+                cwd=str(root),
+                env=env,
+                input="",
+                capture_output=True,
+                text=True,
+                timeout=180,
+            )
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("refusing to start", result.stdout)
+        self.assertIn("apt-get", result.stdout)
+        self.assertNotIn("==> make", result.stdout, "the item must not run after a failed preflight")
+
     def test_a_failing_manager_halts_and_names_the_right_undo_command(self):
         result, recorded, audit = self.run_item("debian", "apt-get", manager_exit=1)
         self.assertEqual(result.returncode, 1)

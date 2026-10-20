@@ -9,12 +9,12 @@
 # user cache and hands over to the installer. It never runs code from a moving branch.
 set -euo pipefail
 
-VERSION="0.2.1"
+VERSION="0.3.0"
 BASE_URL="${TOOLBOX_BASE_URL:-https://github.com/gzlo/xentor-toolbox/releases/download/v${VERSION}}"
 TARBALL="xentor-toolbox-${VERSION}.tar.gz"
 # Pinned by scripts/dist.sh at release time. A placeholder here means "not released yet"
 # and the bootstrap refuses to run.
-SHA256="9d844f552154c0c9efa115cf9595560fb9948bd88f781d91b8de11a0a4ad3194"
+SHA256="c659383590ac43c5b308bd43558be898761bf95b2e82e1f74d4c3db52cfce867"
 
 die() { printf '[ERROR] %s\n' "$*" >&2; exit 1; }
 info() { printf '[INFO]  %s\n' "$*"; }

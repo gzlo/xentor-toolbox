@@ -67,7 +67,7 @@ tui_confirm() {
   [[ "${YES:-0}" == "1" ]] && return 0
 
   if tui_has_gum; then
-    gum confirm --default=false "Install $count item(s): ${SELECTION[*]}?"
+    gum confirm --default=false "INSTALL $count item(s) for real now: ${SELECTION[*]}?"
     return $?
   fi
 
@@ -138,12 +138,14 @@ tui_gum_flow() {
       --header "xentor-toolbox — $PLATFORM, $(tui_visible_ids | wc -l | tr -d ' ') items available" \
       "items    pick what to install" \
       "profile  install a named bundle" \
+      "preview  pick anything and see the plan — installs NOTHING" \
       "catalog  see everything available, with descriptions" \
       "quit     exit without installing")" || return 1
 
     case "$(tui_field "$action")" in
       items)   tui_gum_pick_items && return 0 ;;
       profile) tui_gum_pick_profile && return 0 ;;
+      preview) TUI_PREVIEW=1; tui_gum_pick_items && return 0 ;;
       catalog) tui_show_catalog ;;
       quit)    return 1 ;;
       *)       log_warn "unknown action: $action" ;;
@@ -226,6 +228,7 @@ tui_fallback_flow() {
   case "${answer// /}" in
     q|quit) return 1 ;;
     i|items) tui_fallback_items; return $? ;;
+    p|preview) TUI_PREVIEW=1; tui_fallback_items; return $? ;;
     c|catalog) tui_show_catalog; return 1 ;;
   esac
 
@@ -255,6 +258,12 @@ tui_select() {
   fi
 
   [[ ${#SELECTION[@]} -gt 0 ]] || { log_warn "nothing selected — exiting"; return 1; }
+
+  if [[ "${TUI_PREVIEW:-0}" == "1" ]]; then
+    DRY_RUN=1
+    log_info "preview mode: showing the plan for the selection, nothing will be installed"
+    return 0
+  fi
 
   if ! tui_confirm; then
     log_info "cancelled — nothing installed"

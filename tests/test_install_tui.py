@@ -45,7 +45,7 @@ esac
 # Minimal binary set the installer needs, so the gum-less path can run without /usr/bin.
 GUM_FREE_BINARIES = ["bash", "dirname", "sed", "head", "tr", "id", "getent", "cut", "wc"]
 
-MINIMAL = ["git", "curl", "wget", "unzip", "tar", "gzip", "btop", "ripgrep", "fd", "jq", "zsh", "zsh-default", "shell-baseline", "fresh"]
+MINIMAL = ["git", "curl", "wget", "unzip", "tar", "gzip", "btop", "ripgrep", "fd", "jq", "zsh", "zsh-default", "shell-baseline", "starship", "fresh"]
 
 
 def planned(result):
@@ -56,7 +56,7 @@ def planned(result):
     ]
 
 
-def run_tui(answers, *, gum=True, confirm=0, stdin_text="", os_name="fedora"):
+def run_tui(answers, *, gum=True, confirm=0, stdin_text="", os_name="fedora", dry_run=True):
     with tempfile.TemporaryDirectory() as tmp:
         tmp_dir = pathlib.Path(tmp)
         queue = tmp_dir / "queue"
@@ -91,8 +91,11 @@ def run_tui(answers, *, gum=True, confirm=0, stdin_text="", os_name="fedora"):
                 (bindir / name).symlink_to(target)
             env["PATH"] = str(bindir)
 
+        args = ["bash", str(INSTALL), "--tui", "--force"]
+        if dry_run:
+            args.insert(3, "--dry-run")
         return subprocess.run(
-            ["bash", str(INSTALL), "--tui", "--dry-run", "--force"],
+            args,
             cwd=str(REPO),
             env=env,
             input=stdin_text,
@@ -126,6 +129,13 @@ class GumWizardTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("nothing picked", result.stdout)
         self.assertEqual(planned(result), [])
+
+    def test_preview_action_plans_without_installing(self):
+        result = run_tui(["preview", "fresh  Fresh [editor] Terminal code editor"], dry_run=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("preview mode", result.stdout)
+        self.assertEqual(planned(result), ["fresh"])
+        self.assertIn("no changes made (dry-run)", result.stdout)
 
     def test_quit_installs_nothing(self):
         result = run_tui(["quit"])

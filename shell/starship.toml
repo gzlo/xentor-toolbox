@@ -1,0 +1,88 @@
+# xentor-toolbox — default prompt: blue, readable, no Nerd Font required.
+#
+# Installed to ~/.config/starship.toml ONLY when that file does not exist yet; your
+# own prompt is never overwritten. To personalise, edit this file or point
+# STARSHIP_CONFIG somewhere else.
+#
+# Palette (Nord blues): directory #86BBD8, branch #33658A, error #BF616A.
+
+format = """
+[$directory](bold #86BBD8)\
+$git_branch\
+$git_status\
+$python$golang$nodejs$rust$java$php\
+$time\
+$character"""
+
+add_newline = true
+command_timeout = 2000
+
+[character]
+success_symbol = "[❯](bold #86BBD8)"
+error_symbol = "[❯](bold #BF616A)"
+vimcmd_symbol = "[❮](bold #A3BE8C)"
+
+[directory]
+style = "bold #86BBD8"
+format = "[$path]($style) "
+truncation_length = 3
+truncation_symbol = "…/"
+
+[directory.substitutions]
+"Documents" = "docs"
+"Downloads" = "dl"
+"Pictures" = "img"
+
+[git_branch]
+style = "bold #33658A"
+format = "[$branch]($style) "
+symbol = ""
+
+[git_status]
+style = "#BF616A"
+format = "([$all_status$ahead_behind]($style) )"
+conflicted = "!"
+ahead = "⇡"
+behind = "⇣"
+diverged = "⇕"
+untracked = "?"
+modified = "!"
+staged = "+"
+renamed = "»"
+deleted = "✘"
+
+[time]
+style = "#4C566A"
+format = "[$time]($style) "
+time_format = "%H:%M"
+disabled = false
+
+[python]
+style = "#86BBD8"
+format = "[$symbol($version)]($style) "
+symbol = "py "
+
+[golang]
+style = "#86BBD8"
+format = "[$symbol($version)]($style) "
+symbol = "go "
+
+[nodejs]
+style = "#86BBD8"
+format = "[$symbol($version)]($style) "
+symbol = "nd "
+
+[rust]
+style = "#86BBD8"
+format = "[$symbol($version)]($style) "
+symbol = "rs "
+
+[java]
+style = "#86BBD8"
+format = "[$symbol($version)]($style) "
+symbol = "jv "
+
+[php]
+style = "#86BBD8"
+format = "[$symbol($version)]($style) "
+symbol = "php "

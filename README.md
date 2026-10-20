@@ -8,14 +8,15 @@ installs tools plus a minimal, reversible shell baseline — no secrets, no tele
 and it never rewrites your dotfiles.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/gzlo/xentor-toolbox/v0.2.1/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/gzlo/xentor-toolbox/v0.3.0/bootstrap.sh | bash
 ```
 
 The URL points at a **tag**, not at `main`: the entry point is immutable. Any fix
 to the bootstrap itself ships as a patch release, so what you audit today is what
 runs tomorrow.
 
-That runs the wizard. Prefer to be explicit:
+That runs the wizard. Its `preview` action picks items and shows the plan without
+installing anything — use it before a first real run. Prefer to be explicit:
 
 ```bash
 # a named bundle
@@ -53,9 +54,11 @@ item, with a `check` that decides skip-vs-install, so:
 | `ai` | AI toolchain (+ `claude`/`gemini` behind their own flags) |
 | `full` | every item in the catalog |
 
-**zsh is the primary shell in every profile.** Every bundle installs `zsh`, makes it
-the login shell, and installs the shell baseline, so you never end up on a machine
-with tools installed and no shell to use them from.
+**zsh and a blue prompt are the base in every profile.** Every bundle installs `zsh`,
+makes it the login shell, installs the shell baseline and installs starship with a
+blue prompt, so you never end up on a machine with tools, no shell and no prompt.
+starship comes from the native package on Fedora and Arch, and from the official
+binary on anything else — no package required.
 
 `--items` stays exact by design: it installs only what you name. Add
 `--with-baseline` to keep the guarantee there too — it also works on its own
@@ -97,11 +100,16 @@ Exactly four things, all reversible, all inspectable:
 | Path | What happens |
 |---|---|
 | login shell | set to `zsh` with `chsh` (skipped when already zsh) |
-| `~/.config/xentor-toolbox/shell.zsh` | the baseline: colours, a few safe aliases, history, completion, starship if present. Overwritten on reinstall |
+| `~/.config/xentor-toolbox/shell.zsh` | the baseline: colours, a few safe aliases, history, completion, starship prompt. Overwritten on reinstall |
+| `~/.config/starship.toml` | the default blue prompt, written **only when you have no prompt config**; yours is never touched |
 | `~/.zshrc` | **one managed block** between `# >>> xentor-toolbox >>>` markers. Everything outside the markers is untouched |
 | `~/.shell.local` | created once (mode 600) and **never edited again**: your aliases, exports and functions, sourced last so they win |
 
 Everything else is package-manager work or a binary in `~/.local/bin`.
+
+A run that cannot work never starts: if a selected package item needs a manager that
+is not installed here (for example `XT_OS=debian` on a host without `apt`), the
+installer refuses before touching anything and tells you which items are affected.
 
 ## Personalisation
 
@@ -115,8 +123,12 @@ export EDITOR=fresh
 ```
 
 The baseline is deliberately boring: `ll`, `la`, `..`, coloured `ls`/`grep`/`diff`,
-history with de-duplication and shared history, `compinit`, and `eza`/`starship`
-hooks only when those tools are actually installed.
+history with de-duplication and shared history, and `compinit`.
+
+The prompt is blue out of the box (`#86BBD8` character, `#33658A` branch) and needs no
+Nerd Font. Want your own? Edit `~/.config/starship.toml` — the installer never
+overwrites an existing file, and `STARSHIP_CONFIG` still wins if you point it
+elsewhere.
 
 ## Terminal multiplexer
 

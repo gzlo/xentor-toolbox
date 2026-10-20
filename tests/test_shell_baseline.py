@@ -87,6 +87,20 @@ class ShellBaselineTest(unittest.TestCase):
         self.assertEqual(text.count(START), 1, "the block was appended twice")
         self.assertEqual(text.count(END), 1)
 
+    def test_default_prompt_is_installed_blue(self):
+        result = run_script(self.home, self.repo)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        prompt = self.home / ".config/starship.toml"
+        self.assertTrue(prompt.is_file())
+        self.assertIn("#86BBD8", prompt.read_text(), "the default prompt must be blue")
+
+    def test_an_existing_prompt_is_never_overwritten(self):
+        prompt = self.home / ".config/starship.toml"
+        prompt.parent.mkdir(parents=True)
+        prompt.write_text("# my own prompt\n")
+        run_script(self.home, self.repo)
+        self.assertEqual(prompt.read_text(), "# my own prompt\n")
+
     def test_shell_local_is_created_private(self):
         run_script(self.home, self.repo)
         local = self.home / ".shell.local"
@@ -166,6 +180,7 @@ class ZshIsBaselineTest(unittest.TestCase):
             self.assertIn("zsh", planned, f"{profile} does not install zsh")
             self.assertIn("zsh-default", planned, f"{profile} does not make zsh the default shell")
             self.assertIn("shell-baseline", planned, f"{profile} does not install the shell baseline")
+            self.assertIn("starship", planned, f"{profile} does not install the prompt")
 
 
 if __name__ == "__main__":

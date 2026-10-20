@@ -7,7 +7,7 @@
 profile minimal \
   label="Minimal" \
   desc="the essentials: git, curl, archivers, search, a monitor and an editor" \
-  items="git curl wget unzip tar gzip jq ripgrep fd btop zsh zsh-default shell-baseline fresh"
+  items="git curl wget unzip tar gzip jq ripgrep fd btop zsh zsh-default starship shell-baseline fresh"
 
 profile shell \
   label="Shell" \
@@ -22,7 +22,7 @@ profile dev \
 profile ai \
   label="AI" \
   desc="AI coding toolchain (claude and gemini stay opt-in behind their flags)" \
-  items="zsh zsh-default shell-baseline gentle-ai opencode claude gemini"
+  items="zsh zsh-default starship shell-baseline gentle-ai opencode claude gemini"
 
 profile full \
   label="Full" \
