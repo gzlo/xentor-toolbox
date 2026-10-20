@@ -160,8 +160,38 @@ class UsageTest(unittest.TestCase):
     def test_help_documents_the_scripted_surface(self):
         result = run("--help")
         self.assertEqual(result.returncode, 0, result.stderr)
-        for flag in ("--items", "--profile", "--list", "--dry-run", "--tui", "--yes"):
+        for flag in ("--items", "--profile", "--list", "--dry-run", "--tui", "--yes", "--with-baseline"):
             self.assertIn(flag, result.stdout)
+
+
+class WithBaselineTest(unittest.TestCase):
+    """--with-baseline guarantees the shell baseline on top of whatever was picked."""
+
+    def test_it_adds_the_baseline_to_an_explicit_item_list(self):
+        result = run("--dry-run", "--force", "--items", "fresh", "--with-baseline")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            planned_installs(result),
+            ["zsh", "zsh-default", "shell-baseline", "fresh"],
+        )
+
+    def test_it_does_not_duplicate_items_a_profile_already_has(self):
+        result = run("--dry-run", "--force", "--profile", "minimal", "--with-baseline")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        planned = planned_installs(result)
+        self.assertEqual(len(planned), len(set(planned)), "duplicate items in plan")
+        self.assertIn("shell-baseline", planned)
+
+    def test_it_works_on_its_own(self):
+        result = run("--dry-run", "--force", "--with-baseline")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(planned_installs(result), ["zsh", "zsh-default", "shell-baseline"])
+
+    def test_an_unavailable_baseline_warns_and_does_not_block_the_rest(self):
+        result = run("--dry-run", "--force", "--items", "fresh", "--with-baseline", os_name="alpine")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("baseline not available on alpine", result.stdout)
+        self.assertEqual(planned_installs(result), ["fresh"])
 
 
 class NoMutationTest(unittest.TestCase):

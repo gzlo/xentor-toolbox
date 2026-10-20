@@ -85,7 +85,7 @@ item zsh-default label="Zsh as default" desc="chsh the login shell to zsh" categ
   deps="zsh" install='sudo_run chsh -s "$(command -v zsh)" "$(id -un)"'
 
 item shell-baseline label="Shell baseline" desc="colours, safe aliases, history and completion; personal aliases live in ~/.shell.local" \
-  category=shell platforms="any" method=custom deps="zsh" \
+  category=shell platforms="fedora debian arch" method=custom deps="zsh" \
   check='[[ -f "$ACTUAL_HOME/.config/xentor-toolbox/shell.zsh" ]] && grep -q "xentor-toolbox" "$ACTUAL_HOME/.zshrc" 2>/dev/null' \
   install='bash "$TB_DIR/scripts/shell-baseline.sh" install'
 

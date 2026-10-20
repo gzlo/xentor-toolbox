@@ -8,7 +8,7 @@ installs tools plus a minimal, reversible shell baseline — no secrets, no tele
 and it never rewrites your dotfiles.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/gzlo/xentor-toolbox/v0.2.0/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/gzlo/xentor-toolbox/v0.2.1/bootstrap.sh | bash
 ```
 
 The URL points at a **tag**, not at `main`: the entry point is immutable. Any fix
@@ -56,6 +56,10 @@ item, with a `check` that decides skip-vs-install, so:
 **zsh is the primary shell in every profile.** Every bundle installs `zsh`, makes it
 the login shell, and installs the shell baseline, so you never end up on a machine
 with tools installed and no shell to use them from.
+
+`--items` stays exact by design: it installs only what you name. Add
+`--with-baseline` to keep the guarantee there too — it also works on its own
+(`./install.sh --with-baseline` installs just the shell setup).
 
 `--profile full` means "everything this host can take": a Debian VPS silently
 skips the items that only exist on Fedora.

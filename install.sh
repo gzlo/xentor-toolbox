@@ -3,6 +3,7 @@
 #   ./install.sh                                  interactive wizard
 #   ./install.sh --profile minimal                install a bundle
 #   ./install.sh --items fresh,btop               install exactly these items
+#   ./install.sh --items fresh --with-baseline    ... plus zsh + shell baseline
 #   ./install.sh --list                           TSV: id, category, platforms, state
 #   ./install.sh --dry-run --items fresh          print the plan, change nothing
 #   ./install.sh --help
@@ -32,6 +33,10 @@ DO_TUI=0
 DO_LIST=0
 DO_LIST_PROFILES=0
 DO_HELP=0
+WITH_BASELINE=0
+
+# The shell baseline: the three items --with-baseline guarantees.
+BASELINE_ITEMS=(zsh zsh-default shell-baseline)
 
 # Resolved, ordered, de-duplicated item ids.
 SELECTION=()
@@ -45,6 +50,9 @@ Usage:
 
 Selection:
   --items <id,id>        Install exactly these catalog items (see --list).
+  --with-baseline        Also guarantee zsh as the login shell and the shell
+                         baseline (colours, aliases, ~/.shell.local). Applies to
+                         --items and to the wizard, and works on its own.
   --profile <name>       Install a named bundle: minimal, shell, dev, ai, full
                          (see --list-profiles).
 
@@ -77,6 +85,7 @@ parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --items)         [[ $# -ge 2 ]] || die_usage "--items needs a value"; ITEMS_ARG="$2"; shift 2 ;;
+      --with-baseline) WITH_BASELINE=1; shift ;;
       --profile)       [[ $# -ge 2 ]] || die_usage "--profile needs a value"; PROFILE_ARG="$2"; shift 2 ;;
       --list)          DO_LIST=1; shift ;;
       --list-profiles) DO_LIST_PROFILES=1; shift ;;
@@ -125,6 +134,23 @@ resolve_selection() {
   [[ ${#SELECTION[@]} -gt 0 ]] || die_usage "nothing selected — use --items or --profile"
 }
 
+# add_baseline — guarantee the shell baseline regardless of how items were chosen.
+# An unavailable baseline item is reported once and skipped, never fatal: the rest of
+# the selection still installs.
+add_baseline() {
+  local id skipped=()
+  for id in "${BASELINE_ITEMS[@]}"; do
+    if catalog_item_visible "$id"; then
+      SELECTION+=("$id")
+    else
+      skipped+=("$id")
+    fi
+  done
+  if ((${#skipped[@]} > 0)); then
+    log_warn "baseline not available on $PLATFORM: ${skipped[*]}"
+  fi
+}
+
 main() {
   parse_args "$@"
 
@@ -141,15 +167,19 @@ main() {
   if ((DO_LIST)); then catalog_print_list; exit 0; fi
   if ((DO_LIST_PROFILES)); then catalog_print_profiles; exit 0; fi
 
-  if [[ -z "$ITEMS_ARG" && -z "$PROFILE_ARG" ]]; then
+  if [[ -z "$ITEMS_ARG" && -z "$PROFILE_ARG" ]] && ((WITH_BASELINE == 0)); then
     if ((DO_TUI)) || { [[ -t 0 && -t 1 ]]; }; then
       INTERACTIVE=1
       tui_select || exit 0
     else
       die_usage "no selection and no terminal — use --items or --profile (see --help)"
     fi
-  else
+  elif [[ -n "$ITEMS_ARG" || -n "$PROFILE_ARG" ]]; then
     resolve_selection
+  fi
+
+  if ((WITH_BASELINE)); then
+    add_baseline
   fi
 
   local out
