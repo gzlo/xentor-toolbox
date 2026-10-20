@@ -14,7 +14,7 @@ BASE_URL="${TOOLBOX_BASE_URL:-https://github.com/gzlo/xentor-toolbox/releases/do
 TARBALL="xentor-toolbox-${VERSION}.tar.gz"
 # Pinned by scripts/dist.sh at release time. A placeholder here means "not released yet"
 # and the bootstrap refuses to run.
-SHA256="__SHA256__"
+SHA256="51ba44578e59188c34f40e547b7377a184040255687c4dd52728371a5741f056"
 
 die() { printf '[ERROR] %s\n' "$*" >&2; exit 1; }
 info() { printf '[INFO]  %s\n' "$*"; }

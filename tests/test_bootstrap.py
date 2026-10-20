@@ -10,6 +10,7 @@ nothing touches the network or this repository.
 
 import os
 import pathlib
+import re
 import shutil
 import subprocess
 import tempfile
@@ -67,7 +68,26 @@ class PinnedReleaseTest(unittest.TestCase):
         self.assertIn(f'VERSION="{version}"', bootstrap)
 
     def test_bootstrap_refuses_to_run_unpinned(self):
-        result = run_bootstrap(REPO, "--dry-run", "--items", "git")
+        # The shipped bootstrap is pinned by a release; build an unpinned copy to prove
+        # the guard still exists and still refuses.
+        with tempfile.TemporaryDirectory() as tmp:
+            unpinned = pathlib.Path(tmp) / "bootstrap.sh"
+            text = (REPO / "bootstrap.sh").read_text()
+            text, count = re.subn(r'^SHA256=.*$', 'SHA256="__SHA256__"', text, count=1, flags=re.M)
+            self.assertEqual(count, 1, "bootstrap.sh has no SHA256 line to unpin")
+            unpinned.write_text(text)
+
+            env = dict(os.environ)
+            env.update({"XT_OS": "fedora", "XT_HEADLESS": "0"})
+            result = subprocess.run(
+                ["bash", str(unpinned), "--dry-run", "--items", "git"],
+                cwd=tmp,
+                env=env,
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                text=True,
+                timeout=180,
+            )
         self.assertEqual(result.returncode, 1)
         self.assertIn("not pinned", result.stderr)
 
