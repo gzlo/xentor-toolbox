@@ -1,0 +1,15 @@
+# Runtime logs and scratch space
+logs/
+tmp/
+dist/
+
+# Local overrides
+*.local
+
+# Python test cache
+__pycache__/
+*.pyc
+
+# OS/editor cruft
+.DS_Store
+*.swp
