@@ -17,7 +17,7 @@ import tempfile
 import unittest
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
-COPY = ["install.sh", "bootstrap.sh", "VERSION", "catalog", "scripts", "docs", "README.md", "LICENSE"]
+COPY = ["install.sh", "bootstrap.sh", "VERSION", "catalog", "scripts", "shell", "docs", "README.md", "LICENSE"]
 
 
 def build_release(root):

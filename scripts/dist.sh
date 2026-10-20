@@ -17,7 +17,7 @@ command -v sha256sum >/dev/null 2>&1 || { echo "[ERROR] sha256sum is required" >
 rm -rf "$OUT"
 mkdir -p "$OUT/$NAME"
 
-for entry in install.sh scripts catalog docs README.md LICENSE VERSION; do
+for entry in install.sh scripts catalog shell docs README.md LICENSE VERSION; do
   [[ -e "$TB_DIR/$entry" ]] || { echo "[ERROR] missing $entry" >&2; exit 1; }
   cp -a "$TB_DIR/$entry" "$OUT/$NAME/"
 done

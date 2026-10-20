@@ -7,24 +7,24 @@
 profile minimal \
   label="Minimal" \
   desc="the essentials: git, curl, archivers, search, a monitor and an editor" \
-  items="git curl wget unzip tar gzip jq ripgrep fd btop fresh"
+  items="git curl wget unzip tar gzip jq ripgrep fd btop zsh zsh-default shell-baseline fresh"
 
 profile shell \
   label="Shell" \
   desc="zsh, prompt, fuzzy finding and modern CLI replacements" \
-  items="zsh zsh-default starship fzf zoxide eza bat"
+  items="zsh zsh-default shell-baseline starship fzf zoxide eza bat herdr"
 
 profile dev \
   label="Dev" \
   desc="compilers, runtimes and CLI tooling" \
-  items="git curl wget unzip jq ripgrep fd btop htop make cmake gcc gcc-cxx python3 nodejs golang rust pipx gh nvim fresh zsh starship fzf zoxide eza bat lazygit cloudflared pnpm"
+  items="git curl wget unzip jq ripgrep fd btop htop make cmake gcc gcc-cxx python3 nodejs golang rust pipx gh nvim fresh zsh zsh-default shell-baseline starship fzf zoxide eza bat herdr lazygit cloudflared pnpm"
 
 profile ai \
   label="AI" \
   desc="AI coding toolchain (claude and gemini stay opt-in behind their flags)" \
-  items="gentle-ai opencode claude gemini"
+  items="zsh zsh-default shell-baseline gentle-ai opencode claude gemini"
 
 profile full \
   label="Full" \
   desc="every item declared in the catalog" \
-  items="git curl wget zip unzip tar gzip xz make cmake gcc gcc-cxx htop btop ripgrep fd jq fastfetch zsh zsh-default starship fzf zoxide eza bat fresh nvim gh golang nodejs python3 rust pipx lazygit posting git-filter-repo cloudflared pnpm wrangler gentle-ai opencode claude gemini lazydocker"
+  items="git curl wget zip unzip tar gzip xz make cmake gcc gcc-cxx htop btop ripgrep fd jq fastfetch zsh zsh-default shell-baseline starship fzf zoxide eza bat herdr fresh nvim gh golang nodejs python3 rust pipx lazygit posting git-filter-repo cloudflared pnpm wrangler gentle-ai opencode claude gemini lazydocker"

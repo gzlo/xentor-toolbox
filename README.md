@@ -3,11 +3,12 @@
 Pick the tools you want. Install only those.
 
 A catalog-driven installer for Fedora, Debian/Ubuntu and Arch: one tool per item,
-each with its own "is this already here?" check, driven by a terminal wizard. No
-dotfiles, no secrets, no telemetry — it installs tools and gets out of the way.
+each with its own "is this already here?" check, driven by a terminal wizard. It
+installs tools plus a minimal, reversible shell baseline — no secrets, no telemetry,
+and it never rewrites your dotfiles.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/gzlo/xentor-toolbox/v0.1.3/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/gzlo/xentor-toolbox/v0.2.0/bootstrap.sh | bash
 ```
 
 The URL points at a **tag**, not at `main`: the entry point is immutable. Any fix
@@ -46,11 +47,15 @@ item, with a `check` that decides skip-vs-install, so:
 
 | Profile | What it is |
 |---|---|
-| `minimal` | git, curl, archivers, search, a monitor, an editor |
-| `shell` | zsh, prompt, fuzzy finding, modern CLI replacements |
+| `minimal` | git, curl, archivers, search, a monitor, zsh + shell baseline, an editor |
+| `shell` | the above plus prompt, fuzzy finding, modern CLI replacements and herdr |
 | `dev` | compilers, runtimes, CLI tooling |
-| `ai` | gentle-ai, opencode (+ `claude`/`gemini` behind their own flags) |
+| `ai` | AI toolchain (+ `claude`/`gemini` behind their own flags) |
 | `full` | every item in the catalog |
+
+**zsh is the primary shell in every profile.** Every bundle installs `zsh`, makes it
+the login shell, and installs the shell baseline, so you never end up on a machine
+with tools installed and no shell to use them from.
 
 `--profile full` means "everything this host can take": a Debian VPS silently
 skips the items that only exist on Fedora.
@@ -81,19 +86,53 @@ The bootstrap is deliberately boring:
 Read it before piping it. That advice applies to every `curl | bash` on the
 internet, including this one: `curl -fsSL .../bootstrap.sh | less`.
 
+## What it changes on your machine
+
+Exactly four things, all reversible, all inspectable:
+
+| Path | What happens |
+|---|---|
+| login shell | set to `zsh` with `chsh` (skipped when already zsh) |
+| `~/.config/xentor-toolbox/shell.zsh` | the baseline: colours, a few safe aliases, history, completion, starship if present. Overwritten on reinstall |
+| `~/.zshrc` | **one managed block** between `# >>> xentor-toolbox >>>` markers. Everything outside the markers is untouched |
+| `~/.shell.local` | created once (mode 600) and **never edited again**: your aliases, exports and functions, sourced last so they win |
+
+Everything else is package-manager work or a binary in `~/.local/bin`.
+
+## Personalisation
+
+Put your own shortcuts in `~/.shell.local`:
+
+```bash
+# ~/.shell.local
+alias gs='git status --short --branch'
+alias k='herdr'
+export EDITOR=fresh
+```
+
+The baseline is deliberately boring: `ll`, `la`, `..`, coloured `ls`/`grep`/`diff`,
+history with de-duplication and shared history, `compinit`, and `eza`/`starship`
+hooks only when those tools are actually installed.
+
+## Terminal multiplexer
+
+This setup uses **herdr**, not tmux: `herdr` is an item in the catalog and is part of
+the `shell` profile. If you prefer tmux, install it yourself — the installer does not
+pick a second multiplexer.
+
 ## What it does not do
 
-- No dotfiles and no `$HOME` config files: this installs software, it does not
-  take over your configuration.
+- No dotfiles manager: one managed block in `~/.zshrc`, nothing else.
 - No secrets, no tokens, no credentials, and nothing read from your environment.
 - No telemetry, no analytics, no calling home.
 - No uninstaller. Tools installed through your package manager come out through
-  your package manager.
+  your package manager; delete the shell baseline and its block if you want it gone.
 
 ## Adding an item
 
 1. Add an `item` block to `catalog/items.sh` — see [docs/catalog.md](docs/catalog.md)
-   for the keys, methods and platform gating.
+   for the keys, methods and platform gating. Multi-step items get a script under
+   `scripts/` (see `shell-baseline.sh` for the pattern).
 2. Add the id to the `full` profile in `catalog/profiles.sh`.
 3. Run the suite:
 

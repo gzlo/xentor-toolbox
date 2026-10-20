@@ -84,6 +84,11 @@ item zsh-default label="Zsh as default" desc="chsh the login shell to zsh" categ
   check='[[ "$(getent passwd "$(id -un)" | cut -d: -f7)" == */zsh ]]' \
   deps="zsh" install='sudo_run chsh -s "$(command -v zsh)" "$(id -un)"'
 
+item shell-baseline label="Shell baseline" desc="colours, safe aliases, history and completion; personal aliases live in ~/.shell.local" \
+  category=shell platforms="any" method=custom deps="zsh" \
+  check='[[ -f "$ACTUAL_HOME/.config/xentor-toolbox/shell.zsh" ]] && grep -q "xentor-toolbox" "$ACTUAL_HOME/.zshrc" 2>/dev/null' \
+  install='bash "$TB_DIR/scripts/shell-baseline.sh" install'
+
 item starship label="Starship" desc="Shell prompt" category=shell platforms="fedora arch" \
   method=pkg pkg_fedora=starship pkg_arch=starship check="command -v starship"
 
@@ -98,6 +103,10 @@ item eza label="eza" desc="ls replacement" category=shell platforms="fedora debi
 
 item bat label="bat" desc="cat with syntax highlighting" category=shell platforms="fedora debian arch" \
   method=pkg pkg_fedora=bat pkg_debian=bat pkg_arch=bat check="command -v bat || command -v batcat"
+
+item herdr label="herdr" desc="Terminal multiplexer (installed instead of tmux)" category=shell \
+  platforms="any" method=script check="command -v herdr" \
+  install='curl -fsSL https://herdr.dev/install.sh | sh'
 
 # --- editor -----------------------------------------------------------------
 

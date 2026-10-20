@@ -21,7 +21,7 @@ INSTALL = REPO / "install.sh"
 # A spread of catalog items across categories and platforms.
 SAMPLE_ITEMS = ["git", "btop", "fresh", "zsh", "starship", "nvim", "lazydocker", "opencode"]
 # `minimal` in catalog order.
-MINIMAL = ["git", "curl", "wget", "unzip", "tar", "gzip", "btop", "ripgrep", "fd", "jq", "fresh"]
+MINIMAL = ["git", "curl", "wget", "unzip", "tar", "gzip", "btop", "ripgrep", "fd", "jq", "zsh", "zsh-default", "shell-baseline", "fresh"]
 
 INSTALL_LINE = re.compile(r"^\[dry-run\] install (\S+)$")
 SKIP_LINE = re.compile(r"^\[dry-run\] skip (\S+) \(already installed\)$")

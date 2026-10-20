@@ -45,7 +45,7 @@ esac
 # Minimal binary set the installer needs, so the gum-less path can run without /usr/bin.
 GUM_FREE_BINARIES = ["bash", "dirname", "sed", "head", "tr", "id", "getent", "cut", "wc"]
 
-MINIMAL = ["git", "curl", "wget", "unzip", "tar", "gzip", "btop", "ripgrep", "fd", "jq", "fresh"]
+MINIMAL = ["git", "curl", "wget", "unzip", "tar", "gzip", "btop", "ripgrep", "fd", "jq", "zsh", "zsh-default", "shell-baseline", "fresh"]
 
 
 def planned(result):
